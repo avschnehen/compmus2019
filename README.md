@@ -1,7 +1,7 @@
 # Homework · Week 6
 ## Film music: 2018 vs. 1998
 
-The corpus contains popular film music from the years 2018 and 1998. More specifically, for each of the two years, 25 of the most commercially successful movies (according to http://boxofficemojo.com/yearly) were included. Working from the top of the list downwards, a soundtrack album was included if the complete album was available on Spotify, until 25 albums from 1998 and 25 albums from 2018 were included. This yielded 397 tracks from 1998 and 554 tracks from 2018. While the following corpus analysis hopefully is representative of the change in film music now compared to 20 years ago, it only tells us what movies people *paid money for* rather than *watched*, particularly relevant to the 2018 sample, a year in which streaming and pirating movies was a lot more prevalent than in 1998.
+The corpus contains popular film music from the years 2018 and 1998. More specifically, for each of the two years, 25 of the most commercially successful movies (according to http://boxofficemojo.com/yearly) were included. Working from the top of the list downwards, a soundtrack album was added if the complete album was available on Spotify, until 25 albums from 1998 and 25 albums from 2018 were included. This yielded 397 tracks from 1998 and 554 tracks from 2018. While the following corpus analysis hopefully is representative of the change in film music now compared to 20 years ago, it only tells us what movies people *paid money for* rather than *watched*, particularly relevant to the 2018 sample, a year in which streaming and pirating movies was a lot more prevalent than in 1998.
 
 ## Interesting results
 
