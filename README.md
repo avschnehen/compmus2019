@@ -11,7 +11,7 @@ Besides, it seems that 'energy' was higher in 2018 movie soundtracks (*M* = 0.37
 
 Other variables like speechiness, acousticness, liveness, valence, and tempo, did not seem to yield large differences between the years 1998 and 2018, but statistical tests will be necessary to rule out any differences.
 
-Looking at the extreme values, Spotify's results are often in line with common sense. For instance, the most danceable song among 2018 film soundtracks was Another One Bites the Dust (Bohemian Rhapsody), which intuitively seems very danceable due to its rhythm. Similarly, the least energetic track in 2018 was Growing Pains (Ralph Breaks the Internet), and its very melancholic and slow sound are in line with both the song title and Spotify's energy rating.
+Looking at the extreme values, Spotify's results are often in line with common sense. For instance, the most danceable song among 2018 film soundtracks was Another One Bites the Dust (Bohemian Rhapsody), which intuitively seems very danceable due to its rhythm. As another example, the least energetic track in 2018 was Growing Pains (Ralph Breaks the Internet), and its very melancholic and slow sound are in line with both the song title and Spotify's energy rating.
 
 ## Outliers
 
