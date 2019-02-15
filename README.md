@@ -18,3 +18,5 @@ Looking at the extreme values, Spotify's results are often in line with common s
 In the 2018 sample, there were two tracks that were only 5 and 6 seconds long: 'Chad Tonight Newscast Bumper' and 'Chad Tonight Talkshow Theme' (Incredibles 2). They probably are jingles from a show within the movie. These not only had the lowest duration among the sample, but also the lowest values for danceability, popularity, liveliness, and valence. Probably, they are too short to be properly analysed by the Spotify algorithms, so I would argue they should be excluded from the sample for further analysis.
 
 Similar, the soundtracks to 'A Star is Born' (2018) and 'Rush Hour' (1998) contain tracks that are dialogue/skits and that should be rejected because they are very short and do not constitute music, and because they yield extreme values on most dimension. I found that Spotify also has a version of the 'A Star is Born' album "without dialogue" with 10 less tracks, so this one should be used for further analysis.
+
+# Here are some extra changes I made during the lab session.
