@@ -21,3 +21,8 @@ Similar, the soundtracks to 'A Star is Born' (2018) and 'Rush Hour' (1998) conta
 
 # Homework: Week 7
 ![Energy levels of 1998 vs. 2018's film music](energy.png)
+
+As discussed in previous week's assignment, energy seemed to be the audio feature that 2018 and 1998's film soundtracks seemed to differ most, with the 2018 soundtracks having higher energy levels on average. The above illustration extends this observation: While the 1998 tracks' energy distribution looks more negatively skewed and more concentrated around a low value (approximately 0.15), 2018 tracks' energy seems to be less concentrated and spread out throughout the continuum.
+
+For comparison, see below the average distribution of energy according to Spotify for Developers. Compared to this, it seems that energy levels seem to be generally lower. This makes sense since film music is usually made to be in the background and supplement what we see on screen, without directing too much attention to itself.
+![Distribution of values for energy among Spotify tracks in general](energy_spotify.png)
