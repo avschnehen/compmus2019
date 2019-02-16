@@ -19,4 +19,5 @@ In the 2018 sample, there were two tracks that were only 5 and 6 seconds long: '
 
 Similar, the soundtracks to 'A Star is Born' (2018) and 'Rush Hour' (1998) contain tracks that are dialogue/skits and that should be rejected because they are very short and do not constitute music, and because they yield extreme values on most dimension. I found that Spotify also has a version of the 'A Star is Born' album "without dialogue" with 10 less tracks, so this one should be used for further analysis.
 
-# Here are some extra changes I made during the lab session.
+# Homework: Week 7
+![Energy levels of 1998 vs. 2018's film music](/energy.png)
