@@ -26,3 +26,8 @@ As discussed in previous week's assignment, energy seemed to be the audio featur
 
 For comparison, see below the average distribution of energy according to Spotify for Developers. Compared to this, it seems that energy levels seem to be generally lower. This makes sense since film music is usually made to be in the background and supplement what we see on screen, without directing too much attention to itself.
 ![Distribution of values for energy among Spotify tracks in general](energy_general.png)
+
+# Homework: Week 8
+
+The sample was changed, rather than comparing popular music soundtracks from 2018 and 1998, action and comedy movie soundtracks from 2018 were compared to each other.
+Again, outliers from Incredibles 2 (TV show jingles) were excluded. Similarly, the track 'Shank' from 'Ralph Breaks the Internet' was excluded, because it yielded extreme measures on many variables, indicating that the Spotify API does not correctly identify its audio features.
