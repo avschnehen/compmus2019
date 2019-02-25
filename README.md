@@ -31,3 +31,5 @@ For comparison, see below the average distribution of energy according to Spotif
 
 The sample was changed, rather than comparing popular music soundtracks from 2018 and 1998, action and comedy movie soundtracks from 2018 were compared to each other.
 Again, outliers from Incredibles 2 (TV show jingles) were excluded. Similarly, the track 'Shank' from 'Ralph Breaks the Internet' was excluded, because it yielded extreme measures on many variables, indicating that the Spotify API does not correctly identify its audio features.
+
+# Changes made in week 9
