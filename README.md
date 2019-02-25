@@ -1,35 +1,126 @@
-# Homework · Week 6
-## Film music: 2018 vs. 1998
 
-The corpus contains popular film music from the years 2018 and 1998. More specifically, for each of the two years, 25 of the most commercially successful movies (according to http://boxofficemojo.com/yearly) were included. Working from the top of the list downwards, a soundtrack album was added if the complete album was available on Spotify, until 25 albums from 1998 and 25 albums from 2018 were included. This yielded 397 tracks from 1998 and 554 tracks from 2018. While the following corpus analysis hopefully is representative of the change in film music now compared to 20 years ago, it only tells us what movies people *paid money for* rather than *watched*, particularly relevant to the 2018 sample, a year in which streaming and pirating movies was a lot more prevalent than in 1998.
+---
+title: "Action vs. Comedy"
+author: "Andres von Schnehen"
+date: "2019"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
 
-## Interesting results
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(spotifyr)
+source('spotify.R')
+```
 
-The variable that 1998 soundtracks and 2018 soundtracks seemed to differ the most on was popularity (*M* = 15.5, *SD* = 13.2 in the 1998 sample; *M* = 35.6, *SD* = 20.2). However, this probably does not reflect a difference in music, but rather the fact that Spotify was only launched in 2008.
+Overview
+=================================================
 
-Besides, it seems that 'energy' was higher in 2018 movie soundtracks (*M* = 0.37, *SD* = 0.26) than in 1998 movie soundtracks (*M* = 0.27, *SD* = 0.22).
+### Action vs. Comedy: Comparing Different Styles of Film Music
 
-Other variables like speechiness, acousticness, liveness, valence, and tempo, did not seem to yield large differences between the years 1998 and 2018, but statistical tests will be necessary to rule out any differences.
+A film's soundtrack has a profound influence on how we perceive what we see on screen, and it is difficult to imagine movies without any background music. With the exception of musicals, our attention is rarely directed explicitly to the music, and yet our experience changes significantly because of the music.
 
-Looking at the extreme values, Spotify's results are often in line with common sense. For instance, the most danceable song among 2018 film soundtracks was Another One Bites the Dust (Bohemian Rhapsody), which intuitively seems very danceable due to its rhythm. As another example, the least energetic track in 2018 was Growing Pains (Ralph Breaks the Internet), and its very melancholic and slow sound are in line with both the song title and Spotify's energy rating.
+In blockbuster movies, music is usually created or chosen for every single scene in order to underline what is happening in that scene specifically. But can we find general patterns in the types of music chosen for certain types of movies, that is, certain genres?
 
-## Outliers
+More specifically, are there systematic differences between music that is composed or selected for action movies and music that is composed for comedy movies? These two types of films usually entertain their audiences in quite different ways. While action movies use suspense, thrill, and impressive visual effects to excite their audience, comedy movies often provide a way for their viewers to relax, wind down, and get a feeling of happiness and pleasure. Since music is used as a means to achieve these quite different goals, it would make sense that the music composed and chosen for each genre would be quite different as well.
 
-In the 2018 sample, there were two tracks that were only 5 and 6 seconds long: 'Chad Tonight Newscast Bumper' and 'Chad Tonight Talkshow Theme' (Incredibles 2). They probably are jingles from a show within the movie. These not only had the lowest duration among the sample, but also the lowest values for danceability, popularity, liveliness, and valence. Probably, they are too short to be properly analysed by the Spotify algorithms, so I would argue they should be excluded from the sample for further analysis.
 
-Similar, the soundtracks to 'A Star is Born' (2018) and 'Rush Hour' (1998) contain tracks that are dialogue/skits and that should be rejected because they are very short and do not constitute music, and because they yield extreme values on most dimension. I found that Spotify also has a version of the 'A Star is Born' album "without dialogue" with 10 less tracks, so this one should be used for further analysis.
+Audio features
+==================================================
 
-# Homework: Week 7
-![Energy levels of 1998 vs. 2018's film music](energy.png)
+Column {data-width=650}
+-----------------------------------------------------------------------
 
-As discussed in previous week's assignment, energy seemed to be the audio feature that 2018 and 1998's film soundtracks seemed to differ most, with the 2018 soundtracks having higher energy levels on average. The above illustration extends this observation: While the 1998 tracks' energy distribution looks more negatively skewed and more concentrated around a low value (approximately 0.15), 2018 tracks' energy seems to be less concentrated and spread out throughout the continuum.
+### Valence-energy map
 
-For comparison, see below the average distribution of energy according to Spotify for Developers. Compared to this, it seems that energy levels seem to be generally lower. This makes sense since film music is usually made to be in the background and supplement what we see on screen, without directing too much attention to itself.
-![Distribution of values for energy among Spotify tracks in general](energy_general.png)
+```{r}
+action <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi')
+comedy <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s')
+filmgenres <-
+  action %>% mutate(playlist = "Action") %>%
+  bind_rows(comedy %>% mutate(playlist = "Comedy"))
+actioncomedy <-
+  filmgenres %>%                   # Start with awards.
+  ggplot(                      # Set up the plot.
+    aes(
+      x = valence,
+      y = energy,
+      colour = mode,
+      label = track_name
+    )
+  ) +
+  geom_point(alpha = 0.5) +               # Scatter plot.
+  geom_rug(size = 0.1) +       # Add 'fringes' to show data distribution.
+  facet_wrap(~ playlist) +     # Separate charts per playlist.
+  scale_x_continuous(          # Fine-tune the x axis.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),  # Use grid-lines for quadrants only.
+    minor_breaks = NULL      # Remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(          # Fine-tune the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) +
+  scale_colour_brewer(         # Use the Color Brewer to choose a palette.
+    type = "qual",           # Qualitative set.
+    palette = "Dark2"       # Name of the palette is 'Paired'.
+  ) +
+  labs(                        # Make the titles nice.
+    x = "Valence",
+    y = "Energy",
+    colour = "Mode"
+  )
+ggplotly(actioncomedy)
+```
 
-# Homework: Week 8
+Column {data-width=350}
+-----------------------------------------------------------------------
 
-The sample was changed, rather than comparing popular music soundtracks from 2018 and 1998, action and comedy movie soundtracks from 2018 were compared to each other.
-Again, outliers from Incredibles 2 (TV show jingles) were excluded. Similarly, the track 'Shank' from 'Ralph Breaks the Internet' was excluded, because it yielded extreme measures on many variables, indicating that the Spotify API does not correctly identify its audio features.
+The graph on the left allows for conclusions to be drawn both about the features of film music in general, as well as about how action movie music and comedy movie music differ from each other.
 
-# Changes made in week 9
+It appears that in both cases, there is a large of cluster of tracks with a very low valence, approaching zero. While this is normally interpreted as sad (in the case of low energy) or angry (in the case of high energy) music, the low valence may also be a result of film music's character of being in the background and merely accompanying the visual scenes.
+
+While valence seems to be low in general among film music, this is less true for comedy music. Compared to action film music, comedy music has especially more tracks falling in the top-right quadrant of the valence-energy map, which is considered the quadrant describing 'happy' music. This make intuitive sense - we expect music in comedy films to be uplifting, funny, happy. 
+On the other hand, a lot more action movie tracks than comedy movie tracks seem to fall in the top-left quadrant, usually describing 'angry' music. Again, this is in line with our intuitions about music in action movies: Fast-paced, suspenseful, intense but not usually very happy-sounding.
+
+The graph also seems to suggest that comedy soundtracks contain more major songs compared to action soundtracks, a pattern that will be explored on the next page.
+
+
+Major-minor songs
+============================================
+
+Column {data-width = 700}
+-------------------------------------------------------
+
+```{r}
+ost_action <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi')
+ost_comedy <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s')
+
+action_mode <- data.frame(pull(ost_action, var = mode), "action")
+comedy_mode <- data.frame(pull(ost_comedy, var = mode), "comedy")
+
+colnames(action_mode)[1] <- "mode"
+colnames(action_mode)[2] <- "genre"
+colnames(comedy_mode)[1] <- "mode"
+colnames(comedy_mode)[2] <- "genre"
+
+mode <- add_row(action_mode, mode = comedy_mode$mode, genre = comedy_mode$genre)
+
+majorminorplot <- ggplot(mode, aes(x= mode, fill = mode)) +
+  geom_bar(show.legend = FALSE) +
+  facet_wrap(genre ~ .) +
+  labs(x = "Mode", y = "Number of tracks") +
+  scale_fill_manual(values=c("#2ca25f", "#de2d26"))
+
+ggplotly(majorminorplot)
+```
+
+Column {data-width = 300}
+-------------------------------------------------------
+
+The bar graph confirms the expectation stated on the previous page that comedy movie songs indeed are more likely than action movie songs to be in a major key. Moreover, it appears that generally film music is more often in a a major rather than minor key.
