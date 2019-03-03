@@ -125,7 +125,7 @@ Column {data-width = 300}
 
 The bar graph confirms the expectation stated on the previous page that comedy movie songs indeed are more likely than action movie songs to be in a major key. Moreover, it appears that generally film music is more often in a a major rather than minor key.
 
-Chromagram
+Chromagrams & Cepstograms
 ============================================
 
 Column {data-width = 350}
@@ -342,38 +342,9 @@ sensation_spect %>%
 Column {data-width = 350}
 -------------------------------------------------------
 
-```{r}
-tower_cepst <- 
-    get_tidy_audio_analysis('2k1yPYf9WGA4LiqcLVwtzn') %>% 
-    compmus_align(bars, segments) %>% 
-    select(bars) %>% unnest(bars) %>% 
-    mutate(
-        pitches = 
-            map(segments, 
-                compmus_summarise, pitches, 
-                method = 'rms', norm = 'euclidean')) %>% 
-    mutate(
-        timbre = 
-            map(segments, 
-                compmus_summarise, timbre, 
-                method = 'mean'))
+```{r, out.width = "350px"}
+knitr::include_graphics("cepstograms.png")
 ```
-
-```{r}
-tower_cepst %>% 
-    compmus_gather_timbre %>% 
-    ggplot(
-        aes(
-            x = start + duration / 2, 
-            width = duration, 
-            y = basis, 
-            fill = value)) + 
-    geom_tile() +
-    labs(x = 'Time (s)', y = NULL, fill = 'Magnitude') +
-    scale_fill_viridis_c(option = 'E') +
-    theme_classic()
-```
-
 
 Column {data-width = 300}
 -------------------------------------------------------
@@ -381,3 +352,7 @@ Column {data-width = 300}
 The valence-energy graph under the **Audio features** tab shows that compared to comedy movies, action movies have more tracks that fall in the upper-left quadrant, low valence but high energy, often characterised as "angry" songs. On the other hand, comedy movies seem to have more tracks falling into the upper-right quadrant, high valence and high energy, often characterised as "happy" songs.
 
 On the top left of this tab, we see a spectrogram and cepstogram for a typical "angry" song from our sample drawn from action movies, *Top of the Tower*, from *The Equalizer 2*. On the bottom left of this tab, we see a spectorgram and cepstogram for a typical "happy" song from our sample drawn from comedy movies, *Overnight Sensation* from *Ralph Breaks the Internet*.
+
+A look at the chromagrams reveals that for the action song *Top of the Tower*, most of the power is concentrated around C, which is a very dominant note in the song. Moreover, the song achieves its feeling of suspense by creating a dissonance with the use of minor seconds, indicated by the relatively high power around C# and B. In contrast, the comedy song *Overnight sensation* has its power much more evenly distributed across all tones of the scale, which can be heard in the song that uses lots of diverse intervals, chords, and key change.
+
+The cepstrograms do not look as different, but a difference can be seen in the first power component, indicating loudness. While the action song is louder in general, it stays relatively consistent in its loudness level, whereas the comedy song has more alterations of its volume.
