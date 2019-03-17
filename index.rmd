@@ -5,6 +5,7 @@ author: "Andres von Schnehen"
 date: "2019"
 output: 
   flexdashboard::flex_dashboard:
+    theme: united
     orientation: columns
     vertical_layout: scroll
 ---
@@ -12,13 +13,14 @@ output:
 ```{r setup, include=FALSE}
 library(flexdashboard)
 library(tidyverse)
+library(tidymodels)
 library(plotly)
 library(spotifyr)
 library(compmus)
 source('spotify.R')
 ```
 
-Overview
+Overview {data-navmenu="Overview"}
 =================================================
 Column {data-width=650}
 -----------------------------------------------------------------------
@@ -32,19 +34,19 @@ More specifically, are there systematic differences between music that is compos
 
 To obtain the corpus, the most commercially successful action and comedy movies of 2018 were considered. The box office charts from Box Office Mojo (https://www.boxofficemojo.com/yearly/) were used to determine what movies to include, along with IMDB's information about genre (https://www.imdb.com/). For each film, IMDB lists up to three genres. A movie's soundtrack if and only if the full soundtrack album was available on Spotify, and if the genre of that film according to IMDB was either action or comedy, but not both. This was done starting with the most commercially successful movie (Black Panther) and down the charts until 25 full action movie soundtracks and 25 full comedy movie soundtracks were obtained.
 
-Click through the tabs on the top of the page to explore the audio features of film music according to Spotify API, how they differ between action and comedy film music, and what else stands out.
+Click through the drop-down menus on the top of the page to explore the audio features of film music according to Spotify API, how they differ between action and comedy film music, and what else stands out.
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 ```{r, out.width = "400px"}
-knitr::include_graphics("action1.jpg")
+knitr::include_graphics("action1.png")
 ```
 
 ```{r, out.width = "400px"}
-knitr::include_graphics("comedy1.jpg")
+knitr::include_graphics("comedy1.png")
 ```
 
-Angry Action and Happy Comedy
+Angry Action, Happy Comedy {data-navmenu="Analyses"}
 ==================================================
 
 Column {data-width=650}
@@ -53,8 +55,10 @@ Column {data-width=650}
 ### Valence-energy map
 
 ```{r}
-action <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi')
-comedy <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s')
+action <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi') %>%
+    add_audio_analysis
+comedy <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s') %>%
+    add_audio_analysis
 filmgenres <-
   action %>% mutate(playlist = "Action") %>%
   bind_rows(comedy %>% mutate(playlist = "Comedy"))
@@ -105,42 +109,7 @@ On the other hand, a lot more action movie tracks than comedy movie tracks seem 
 
 The graph also seems to suggest that comedy soundtracks contain more major songs compared to action soundtracks, a pattern that will be explored on the next page.
 
-
-More comedy, more major
-============================================
-
-Column {data-width = 700}
--------------------------------------------------------
-
-```{r}
-ost_action <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi')
-ost_comedy <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s')
-
-action_mode <- data.frame(pull(ost_action, var = mode), "action")
-comedy_mode <- data.frame(pull(ost_comedy, var = mode), "comedy")
-
-colnames(action_mode)[1] <- "mode"
-colnames(action_mode)[2] <- "genre"
-colnames(comedy_mode)[1] <- "mode"
-colnames(comedy_mode)[2] <- "genre"
-
-mode <- add_row(action_mode, mode = comedy_mode$mode, genre = comedy_mode$genre)
-
-majorminorplot <- ggplot(mode, aes(x= mode, fill = mode)) +
-  geom_bar(show.legend = FALSE) +
-  facet_wrap(genre ~ .) +
-  labs(x = "Mode", y = "Number of tracks") +
-  scale_fill_manual(values=c("#2ca25f", "#de2d26"))
-
-ggplotly(majorminorplot)
-```
-
-Column {data-width = 300}
--------------------------------------------------------
-
-The bar graph confirms the expectation stated on the previous page that comedy movie songs indeed are more likely than action movie songs to be in a major key. Moreover, it appears that generally film music is more often in a a major rather than minor key.
-
-Chroma and its function
+Functions of chroma {data-navmenu="Analyses"}
 ============================================
 
 Column {.tabset}
@@ -203,7 +172,7 @@ On the left, in the first tab, we see a spectrogram and cepstogram for a typical
 
 A look at the chromagrams reveals that for the action song *Top of the Tower*, most of the power is concentrated around C, which is a very dominant note in the song. Moreover, the song achieves its feeling of suspense by creating a dissonance with the use of minor seconds, indicated by the relatively high power around C# and B. In contrast, the comedy song *Overnight sensation* has its power much more evenly distributed across all tones of the scale, which can be heard in the song that uses lots of diverse intervals, chords, and key change.
 
-Timbre
+Timbre {data-navmenu="Analyses"}
 ===============================================================
 Column {.tabset}
 -------------------------------------------------------
@@ -276,7 +245,7 @@ Column
 -------------------------------------------------------
 When comparing the same songs, *Top of the Tower* and *Overnight Sensation*, it appears that *Top of the Tower* seems to have a higher level of brightness. However, it also visible that after around 100 seconds, there is a sudden drop in brightness. This corresponds to a monotonous, mellow part of a song that follows an energetic climax.
 
-Dynamic time warping
+Dynamic time warping {data-navmenu="Analyses"}
 ===============================================================
 
 Column {.tabset}
@@ -388,7 +357,7 @@ The soundtrack of *Ralph Breaks the Internet* features two versions of the song 
 
 Finally, *Aquaman's* soundtrack features the original version of the song **Everything I need** by **Skylar Grey**, as well as a modified version made for the film. The graph on the left reveals that these two versons are relatively similar in terms of chroma, but do contain quite some differences. The fact that the diagonal line does not go through the origin (0, 0) of the coordinate system, but rather intersects the x-axis at around 15 seconds indicates that the original version contains a short intro not contained in the film version.
 
-Self-similarity matrices
+Self-similarity matrices {data-navmenu="Analyses"}
 ================================================================
 
 Column {.tabset}
@@ -478,7 +447,7 @@ The action song, **Top of the Tower**, sounds relatively monotonous in terms of 
 
 In contrast, in the case of the comedy song, **Overnight Sensation**, change seems to be the only constant. In terms of chroma, the matrix looks so chaotic that probably the song does not have a clear structure. In fact, I think the point of this song is that there is "a lot going on", and the lack of a structure is used as stylistic device. Running the song through Chordify yields a small number of chords that repeat relatively consistently, but a clear chromatic structure is still not picked up, probably because the chords are quite unrelated to each other (in a music theoretical sense), so the notes contained in one chord may be completely different from the notes contained in the previous chord. Timbre-wise, there seems to be some structure, with different parts each lasting 20-25 seconds long, but it is still relatively chaotic, especially when compared with the action song.
 
-Building suspense by key
+Building suspense by key {data-navmenu="Analyses"}
 ======================================================
 
 ```{r}
@@ -620,3 +589,163 @@ As illustrated in the graph under **Audio features**, "relaxed songs", that is, 
 The key profile in the first tab on the left reveals that this song has essentially a three-part structure, one dominated by an B minor chord, an interlude dominated by its subdominant, E minor, and a final part that is in B minor again. However, the final section does not quite look like the first one. Indeed, new chords are introducted in between, and notes that are not part of the chord are played in the background, leading to a keygram where there is power in almost every chord label.
 
 Let's look at a different example, *Train Heist* from *Solo: A Star Wars Story*, a track that with his relatively low valence and medium energy, represents a typical Action movie song. This keygram looks comparatively more complex, and sounds like it would accompany a suspenseful scene with many twists - marked by many key changes. A quiet intro in C minor is followed by a slightly more energetic, but still melancholic part in F minor. The following part in D minor slowly builds up the suspense and makes the song increase in energy. The key shifts to E minor and back to D minor. At the song's climax there is power corresponding to many different chords, in line with the sudden harmonic changes and the use of dissonance in the music. After using predominantly minor keys, the song ends with a finale in E major, sounding significantly happier and more triumphant than the rest of the song, presumably indicating that the heist has been a success.
+
+Classification  {data-navmenu="Analyses"}
+======================================================
+
+```{r}
+filmgenres <-
+  action %>% mutate(playlist = "Action") %>%
+  bind_rows(comedy %>% mutate(playlist = "Comedy")) %>%
+    mutate(playlist = factor(playlist)) %>% 
+    mutate(
+        segments = 
+            map2(segments, key, compmus_c_transpose)) %>%
+    mutate(
+        pitches = 
+            map(segments, 
+                compmus_summarise, pitches, 
+                method = 'mean', norm = 'manhattan'),
+        timbre =
+            map(
+                segments,
+                compmus_summarise, timbre,
+                method = 'mean')) %>%
+    mutate(pitches = map(pitches, compmus_normalise, 'clr')) %>% 
+    mutate_at(vars(pitches, timbre), map, bind_rows) %>% 
+    unnest(pitches, timbre)  
+```
+
+```{r}
+film_class <- 
+    recipe(playlist ~
+               danceability +
+               energy +
+               loudness +
+               speechiness +
+               acousticness +
+               instrumentalness +
+               liveness +
+               valence +
+               tempo +
+               duration_ms +
+               C + `C#|Db` + D + `D#|Eb` +
+               E + `F` + `F#|Gb` + G +
+               `G#|Ab` + A + `A#|Bb` + B +
+               c01 + c02 + c03 + c04 + c05 + c06 +
+               c07 + c08 + c09 + c10 + c11 + c12,
+           data = filmgenres) %>% 
+    step_center(all_predictors()) %>%
+    step_scale(all_predictors()) %>%
+    # step_range(all_predictors()) %>% 
+    prep(filmgenres) %>% 
+    juice
+```
+
+```{r}
+film_cv <- film_class %>% vfold_cv(10) # change this to 10 !
+```
+
+Column {.tabset}
+---------------------------------------------------------
+### Most important features
+
+```{r, include=FALSE}
+film_forest <- rand_forest() %>% set_engine('randomForest')
+predict_forest <- function(split)
+    fit(film_forest, playlist ~ ., data = analysis(split)) %>% 
+    predict(assessment(split), type = 'class') %>%
+    bind_cols(assessment(split))
+```
+
+```{r, include=FALSE}
+film_cv %>% 
+    mutate(pred = map(splits, predict_forest)) %>% 
+    unnest(pred) %>% 
+    metric_set(accuracy, kap, j_index)(truth = playlist, estimate = .pred_class)
+```
+
+```{r}
+film_class %>% 
+    fit(film_forest, playlist ~ ., data = .) %>% 
+    pluck('fit') %>% 
+    randomForest::varImpPlot()
+```
+
+### Classification using all predictors
+
+```{r, include=FALSE}
+film_knn <- nearest_neighbor(neighbors = 1) %>% set_engine('kknn')
+predict_knn <- function(split)
+    fit(film_knn, playlist ~ ., data = analysis(split)) %>% 
+    predict(assessment(split), type = 'class') %>%
+    bind_cols(assessment(split))
+```
+
+```{r, include=FALSE}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class)
+```
+
+```{r}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class) %>% 
+    autoplot(type = 'mosaic')
+```
+
+### Classification using most important predictors
+
+```{r, include=FALSE}
+predict_knn_reduced <- function(split)
+    fit(
+        film_knn, 
+        playlist ~ c06 + valence + c04 + instrumentalness + c05 + duration_ms + c09 + danceability + c07, 
+        data = analysis(split)) %>% 
+    predict(assessment(split), type = 'class') %>%
+    bind_cols(assessment(split))
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn_reduced)) %>% unnest(pred) %>% 
+    metric_set(accuracy, kap, j_index)(truth = playlist, estimate = .pred_class)
+```
+
+```{r, include=FALSE}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn_reduced)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class)
+```
+
+```{r}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn_reduced)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class) %>% 
+    autoplot(type = 'mosaic')
+```
+
+Column
+---------------------------------------------------------
+Using a classifier on the corpus can give us some indication how different the two types of music are and how well R classifies music correctly as belonging to Action or Comedy soundtracks.
+
+Random Forests (first tab) allow us to identify the most important features, that is, the features that most reliably distinguish action from comedy film music. For our sample, these appear to be timbre components 6, 4, 5, 9, and 7, as well as the features valence, instrumentalness, duration, and danceability.
+
+The second tab shows the classifier's performance if *all* features are taken into account. As the mosaic plot indicates, accuracy is fairly high (0.728). Below is the confusion matrix of the model with all features.
+
+```{r}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class)
+```
+
+The third tab shows the performance if only the five most important timbre components and the other four most important audio features are included in the model. Accuracy of the classifier increases, but only by a little (0.738). Below is the confusion matrix with only the selected features.
+
+```{r}
+film_cv %>% 
+    mutate(pred = map(splits, predict_knn_reduced)) %>% unnest(pred) %>% 
+    conf_mat(truth = playlist, estimate = .pred_class)
+```
+
+Conclusions {data-navmenu="Conclusions"}
+======================================================
+
+To be added at a later stage.
