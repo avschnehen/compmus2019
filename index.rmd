@@ -15,8 +15,11 @@ library(flexdashboard)
 library(tidyverse)
 library(tidymodels)
 library(plotly)
+library(protoclust)
+library(heatmaply)
 library(spotifyr)
 library(compmus)
+library(dendextend)
 source('spotify.R')
 ```
 
@@ -745,7 +748,137 @@ film_cv %>%
     conf_mat(truth = playlist, estimate = .pred_class)
 ```
 
+The Versality of Dario Marianelli  {data-navmenu="Analyses"}
+======================================================
+Column {data-width = 650}
+---------------------------------------------------------
+
+```{r}
+bumblebee <- get_playlist_audio_features('1175159882', '0gaSUGW5vUIFpn34gH8nXT') %>%
+    add_audio_analysis
+paddington <- get_playlist_audio_features('1175159882', '5iOJTAy2oFdZTPxIaangS2') %>%
+    add_audio_analysis
+marianelli <-
+  bumblebee %>% mutate(playlist = "Bumblebee") %>%
+  bind_rows(paddington %>% mutate(playlist = "Paddington"))
+```
+
+```{r}
+marianelli <- 
+    get_playlist_audio_features('1175159882', '1dOHAViimBLo7SPbBhXr3y') %>% 
+    add_audio_analysis %>% 
+    mutate(
+        segments = 
+            map2(segments, key, compmus_c_transpose)) %>% 
+    mutate(
+        segments =
+            map(
+                segments,
+                mutate,
+                delta_timbre = map2(timbre, lag(timbre), `-`))) %>% 
+    mutate(
+        pitches = 
+            map(segments, 
+                compmus_summarise, pitches, 
+                method = 'mean', norm = 'manhattan'),
+        timbre =
+            map(
+                segments,
+                compmus_summarise, timbre,
+                method = 'mean'),
+        delta_timbre =
+            map(
+                segments,
+                compmus_summarise, delta_timbre,
+                method = 'mean')) %>% 
+    mutate(pitches = map(pitches, compmus_normalise, 'clr')) %>% 
+    mutate_at(vars(pitches, timbre, delta_timbre), map, bind_rows) %>% 
+    unnest(pitches, timbre, delta_timbre)
+```
+
+```{r}
+for (i in 1:nrow(marianelli)){
+  if (marianelli$album_name[i] == "Paddington 2 (Original Motion Picture Soundtrack)"){
+  marianelli$track_name[i] <- paste("(P)", marianelli$track_name[i])
+} else {
+  marianelli$track_name[i] <- paste("(B)", marianelli$track_name[i])
+}
+}
+```
+
+```{r}
+for (i in 1:nrow(marianelli)){
+  if (marianelli$album_name[i] == "Paddington 2 (Original Motion Picture Soundtrack)"){
+  marianelli$track_name[i] <- paste("(P)", marianelli$track_name[i])
+} else {
+  marianelli$track_name[i] <- paste("(B)", marianelli$track_name[i])
+}
+} # change the track names to add (P) or (B)
+```
+
+```{r}
+marianelli_juice <- 
+    recipe(track_name ~
+               danceability +
+               energy +
+               loudness +
+               speechiness +
+               acousticness +
+               instrumentalness +
+               liveness +
+               valence +
+               tempo +
+               duration_ms +
+               C + `C#|Db` + D + `D#|Eb` +
+               E + `F` + `F#|Gb` + G +
+               `G#|Ab` + A + `A#|Bb` + B +
+               c01 + c02 + c03 + c04 + c05 + c06 +
+               c07 + c08 + c09 + c10 + c11 + c12,
+           data = marianelli) %>% 
+    step_center(all_predictors()) %>%
+    step_scale(all_predictors()) %>%
+    # step_range(all_predictors()) %>% 
+    prep(marianelli %>% mutate(track_name = str_trunc(track_name, 20))) %>% 
+    juice %>% 
+    column_to_rownames('track_name')
+```
+
+```{r}
+marianelli_dist <- dist(marianelli_juice, method = 'euclidean')
+```
+
+```{r}
+plot(color_branches((as.dendrogram(hclust(marianelli_dist, method = 'complete'))), h = 11))
+```
+
+Column {data-width = 350}
+---------------------------------------------------------
+
+**If somebody has got an idea how to reduce the axis label font size or otherwise prevent the track names from being cut off, let's hear it!!**
+
+Hopefully, the portfolio has so far demonstrated that music for different film genres differ considerably in several aspects. However, a movie soundtrack's sound is not only determined by its genre but also by the unique styler of its composer.
+
+Among the soundtracks in this analysis, there was one action film soundtrack (**Bumblebee**) and one comedy film soundtrack (**Paddington 2**) written by the same composer, Dario Marianelli. An interesting question that arises is whether the soundtracks of these two films are substantially different, or whether they are similar, given that they were written by the same composer. This can be explored with cluster analysis using audio features, as done on the left side.
+
+As the dendrogram illustrates, clustering yielded 3 main clusters, and one song (*Dad's Old Videotapes* from the *Bumblebee* soundtrack) that does not cluster together with any other songs. Interestingly, <span style="color:red">the first cluster</span> contains exlusively songs from *Paddington 2*. While this is a comedy movie, all songs in this cluster sound more suspenseful and fast-paced and evoke the feeling of a hunt/race, underlining the Adventure element of this movie. Yet, they still do not really sound like tracks from an action movie, probably partly due their timbre (bells, marimba, accordeon, harps, etc.).
+
+<span style="color:green">The second cluster</span>, in contrast, only contains tracks from *Bumblebee*, and they all sound more like typical action movie music. The timbre tends to be quite epic, with a big orchestra, a large brass and string section, but also elecric guitars, and with more use of drums and bass. Most of these songs use dissonance and semitone intervals to create suspense - essentially, this is the music we imagine in fight scnes and explosion scenes.
+
+<span style="color:blue">The remaining cluster</span> contains a mix of songs from the two movies. These songs use less dissonant chords, but more minor chords, and tend to be slow. Compared to the other two clusters, this appears to be music that is more in the background and that accompanies more emotional scenes.
+
+The only song that does not fall into any cluster, <span style="color:orange">Dad's Old Videotapes</span>, sounds markedly different from all other songs. It is extremely slow, melancholic and sad. This appears to be from a really emotional scene, presumably where somebody revels in old memories.
+
+All in all then, we see a clear cluster with music typical for *Paddington 2* (and maybe typical for adventure comedies in general), and a cluster with music typical for *Bumblebee* (or action movies in general). However, there are also many other songs from both films that form one cluster together, that the clustering analysis could not easily separate. Maybe this just reflects Dario Marianelli's style in general, or maybe it reflects the fact that sometimes movies of different genres like action and comedy try to evoke the same emotions in a particular scene.
+
 Conclusions {data-navmenu="Conclusions"}
 ======================================================
 
-To be added at a later stage.
+It is difficult to imagine film without music. In fact, the music, whether it is part of the scene or background accompaniment, has a profound effect on our exprience of watching a movie. Therefore, the style of music one picks or composes for a film is far from random: Music is used to add an extra layer of emotion to a scene, and therefore music from different genres should have different styles of music. Indeed, action and comedy films, as this analysis aimed to show, appear to have quite different styles of music.
+
+Looking at valence and energy features, it appears that while both genres seem to have a lot of tracks in the low energy range (presumably those tracks that are in the background), comedy movies seem to have more 'happy' tracks (high valence, high energy) and more 'relaxed' tracks (high valence, low energy), where as action movies seem to have more 'angry' tracks (low valence, high energy).
+
+In terms of chroma, when we picked a typical action song and a typical comedy song, the action song had a lot more power on the same note, and its direct neighbour, probably creating dissonance through semitone intervals. The comedy song, had its power more evenly straight across the range of tones, but with higher power in its dominant and subdominant tone.
+
+If we look at timbre, it makes sense that action and comedy movies would have relatively different timbres. Indeed, when comparing a typical action track and a typical comedy track, the action track seemed to have somewhat more loudness and less brightness compared to the comedy track.
+
+*To be continued*
