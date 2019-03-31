@@ -1,6 +1,6 @@
 
 ---
-title: "Action vs. Comedy"
+title: "The Sound of Film Music"
 author: "Andres von Schnehen"
 date: "2019"
 output: 
@@ -112,6 +112,66 @@ On the other hand, a lot more action movie tracks than comedy movie tracks seem 
 
 The graph also seems to suggest that comedy soundtracks contain more major songs compared to action soundtracks, a pattern that will be explored on the next page.
 
+How loud, how fast? {data-navmenu="Analyses"}
+============================================
+
+Column {data-width=550}
+------------------------------------------------------
+
+### Tempo, SD tempo, and loudness between the genres
+
+```{r}
+action100 <- get_playlist_audio_features('1175159882', '71EBCZ27SkMXFqJ45u9Wbi') %>%
+    slice(1:100) %>%
+    add_audio_analysis
+comedy100 <- get_playlist_audio_features('1175159882', '7FMw4QExCSE4bmyMmYwZ7s') %>%
+    slice(1:100) %>%
+    add_audio_analysis
+filmgenres100 <-
+  action100 %>% mutate(playlist = "Action") %>%
+  bind_rows(comedy100 %>% mutate(playlist = "Comedy"))
+```
+
+```{r}
+filmgenresplot <- filmgenres100 %>% 
+    mutate(
+        sections = 
+            map(
+                sections, 
+                summarise_at, 
+                vars(tempo, loudness, duration), 
+                list(section_mean = mean, section_sd = sd))) %>% 
+    unnest(sections) %>%
+    ggplot(
+        aes(
+            x = tempo, 
+            y = tempo_section_sd, 
+            colour = playlist,
+            alpha = 0.7,
+            label = track_name)) +
+    geom_point(aes(size = loudness)) + 
+    geom_rug() + 
+    theme_minimal() +
+    ylim(0, 5) + 
+    labs(
+        x = 'Mean Tempo (bpm)', 
+        y = 'SD Tempo', 
+        colour = 'Genre', 
+        size = 'Volume (dBFS)',
+        alpha = '')
+
+ggplotly(filmgenresplot)
+```
+
+Column {data-width=450}
+------------------------------------------------------
+
+Besides looking at measures such as valence, energy, and mode, it is also possible to explore and compare more low-level track features like duration of a song, tempo, and what Spotify calls 'loudness' (decibel power).
+
+On the left, we can see a graphical representation of tempo, standard deviation of tempo, and loudness, for a selection of 100 songs from each of the two different genres of music. At first glance, there do not seem to be stark differences between the genres with regards to these variables. It looks as though there are more songs in the action playlist with a higher tempo standard deviation, that is, songs where the tempo fluctuates more within the same song. Indeed, this makes sense if we imagine a typical action film song that creates suspense by alternating slower build-ups and rests with intense fast-paced sections. The song with the highest tempo standard deviation here, *Haircut and Beard - Extended* from the *Avengers: Infinity War* soundtrack seems to be precisely such a song.
+
+However, generally, tempo, tempo standard deviation, and loudness do not seem to be the variables that clearly distinguish film soundtracks from action and comedy movies. Possibly this is due to the character of film music in general, having mostly a supportive, accompanying role rather than capturing all of its listeners' attention. Let's explore some more audio features to see more similarities and differences between music of these two genres.
+
 Functions of chroma {data-navmenu="Analyses"}
 ============================================
 
@@ -169,9 +229,9 @@ sensation_spect %>%
 Column
 -------------------------------------------------------
 
-The valence-energy graph under the **Audio features** tab shows that compared to comedy movies, action movies have more tracks that fall in the upper-left quadrant, low valence but high energy, often characterised as "angry" songs. On the other hand, comedy movies seem to have more tracks falling into the upper-right quadrant, high valence and high energy, often characterised as "happy" songs.
+The valence-energy graph in the **Angry Action, Happy Comedy** page shows that compared to comedy movies, action movies have more tracks that fall in the upper-left quadrant, low valence but high energy, often characterised as "angry" songs. On the other hand, comedy movies seem to have more tracks falling into the upper-right quadrant, high valence and high energy, often characterised as "happy" songs.
 
-On the left, in the first tab, we see a spectrogram and cepstogram for a typical "angry" song from our sample drawn from action movies, *Top of the Tower*, from *The Equalizer 2*. In the second tab, we see a spectorgram and cepstogram for a typical "happy" song from our sample drawn from comedy movies, *Overnight Sensation* from *Ralph Breaks the Internet*.
+On the left, in the first tab, we see a spectrogram and cepstogram for a typical "angry" song from our sample drawn from action movies, *Top of the Tower*, from *The Equalizer 2*. In the second tab, we see a spectrogram and cepstogram for a typical "happy" song from our sample drawn from comedy movies, *Overnight Sensation* from *Ralph Breaks the Internet*.
 
 A look at the chromagrams reveals that for the action song *Top of the Tower*, most of the power is concentrated around C, which is a very dominant note in the song. Moreover, the song achieves its feeling of suspense by creating a dissonance with the use of minor seconds, indicated by the relatively high power around C# and B. In contrast, the comedy song *Overnight sensation* has its power much more evenly distributed across all tones of the scale, which can be heard in the song that uses lots of diverse intervals, chords, and key change.
 
@@ -246,7 +306,13 @@ sensation_cepst %>%
 
 Column
 -------------------------------------------------------
-When comparing the same songs, *Top of the Tower* and *Overnight Sensation*, it appears that *Top of the Tower* seems to have a higher level of brightness. However, it also visible that after around 100 seconds, there is a sudden drop in brightness. This corresponds to a monotonous, mellow part of a song that follows an energetic climax.
+The songs from the chroma analysis, *Top of the Tower* and *Overnight Sensation*, seem to represent prototypical songs from their respective genres, action and comedy. Hence, we use the same songs for a timbral analysis. While, compared to chroma, timbre is a concept that is much harder to conceptualise, we do see some differences between the two songs.
+
+The second timbre coefficient (c02) relates to brightness of a song. Perhaps intuitively, the comedy song appears to have a higher timbral brightness in general (more yellow in c02), although the action song seems to have more *variation* in brightness, with a generally low level of brightness but a sudden increases after around 100 seconds, when there is a mellow part of the song that follows an energetic climax.
+
+Even though this coefficient technically relates more to loudness than to timbre, we see more yellow in c01 for the action song, so this song seems to take more of a salient role, or perhaps it indicates that action songs tend to be louder in general.
+
+It is hard to interpret all the other differences in timbral coefficients, but it appears that they differ from each other quite substantially, which is in line with our subjective listening experience (*Top of the Tower* has a more classical orchestral soundtrack, whereas *Overnight Sensation* has a much more electronic, futuristic, and experimental sound to it).
 
 Dynamic time warping {data-navmenu="Analyses"}
 ===============================================================
@@ -352,13 +418,13 @@ compmus_long_distance(
 Column
 -------------------------------------------------------
 
-Sometimes existing songs are re-recorded or edited to create an alternative version for a movie. Comparing the movie version to the original verion may tell us a bit about the attributes of film music in general.
+Sometimes existing songs are re-recorded or edited to create an alternative version for a movie. Comparing the movie version to the original version may tell us a bit about the attributes of film music in general.
 
 In the first tab on the left, you see Dynamic Time Warping applied to two different versions of the song **Mammia Mia** by **ABBA**. Specifically, it compares the original version from 1975 to the one performed by the cast of *Mamma Mia: Here We Go Again* (2018). Interestingly, some sections of the songs seem to be very similar between the two versions, whereas others are not. For the first 45 seconds of the song, we do not see a distinct diagonal line going through the graph, indicating that the versions are vastly different. The film version has a very slow, variable-tempo, acoustic intro, whereas the original song starts as upbeat as the rest of the song. Only from 00:45, the film version sounds more like original version, at which point we also see a diagonal line going through the graph. Looking at the graph as a whole reveals sections of the song where film and original version are similar and where they are more different.
 
 The soundtrack of *Ralph Breaks the Internet* features two versions of the song **In this Place**, one instrumental and one featuring *Julia Michael's* voice. Compared to the the **Mamma Mia** graph, we see a much more distinct dark diagonal line going through the whole song. This indicates that the original version and instrumental version are very similar, at least in terms of chroma. However, we also do see that about 10 seconds into the song, precisely where *Julia Michael* starts singing in the original version, the line becomes a little less clear, indicating that the singers' voice does have a visible effect on the song's chroma features.
 
-Finally, *Aquaman's* soundtrack features the original version of the song **Everything I need** by **Skylar Grey**, as well as a modified version made for the film. The graph on the left reveals that these two versons are relatively similar in terms of chroma, but do contain quite some differences. The fact that the diagonal line does not go through the origin (0, 0) of the coordinate system, but rather intersects the x-axis at around 15 seconds indicates that the original version contains a short intro not contained in the film version.
+Finally, *Aquaman's* soundtrack features the original version of the song **Everything I need** by **Skylar Grey**, as well as a modified version made for the film. The graph on the left reveals that these two versions are relatively similar in terms of chroma, but do contain quite some differences. The fact that the diagonal line does not go through the origin (0, 0) of the coordinate system, but rather intersects the x-axis at around 15 seconds indicates that the original version contains a short intro not contained in the film version.
 
 Self-similarity matrices {data-navmenu="Analyses"}
 ================================================================
@@ -446,7 +512,7 @@ Column
 
 The structure of a song can be evaluated by means of a self-similarity matrix. Such matrices have been computed for the archetypical action and comedy songs, respectively, **Top of the Tower** (action) and **Overnight Sensation** (comedy). Self-similarity matrices can be computed on chroma and on timbre features, both of which was done here, resulting in a total of four matrices.
 
-The action song, **Top of the Tower**, sounds relatively monotonous in terms of chroma (mostly lingering on pitch C, somtimes alternating with C#), and more diverse in terms of timbre, with some mellow mostly-electronic sounds in the beginning, and more of an orchestral sound in the end. Both of these observations are illustrated in the self-similarity matrices. The chroma changes relatively little throughout the song, except a part at the end. The timbre stays relatively constant in the first half of the song, but then seems to change quite substantially, as the song begins to sound more epic and orchestral. Both of these features are used to create a feeling of suspense, making this song fit well within an action film soundtrack.
+The action song, **Top of the Tower**, sounds relatively monotonous in terms of chroma (mostly lingering on pitch C, sometimes alternating with C#), and more diverse in terms of timbre, with some mellow mostly-electronic sounds in the beginning, and more of an orchestral sound in the end. Both of these observations are illustrated in the self-similarity matrices. The chroma changes relatively little throughout the song, except a part at the end. The timbre stays relatively constant in the first half of the song, but then seems to change quite substantially, as the song begins to sound more epic and orchestral. Both of these features are used to create a feeling of suspense, making this song fit well within an action film soundtrack.
 
 In contrast, in the case of the comedy song, **Overnight Sensation**, change seems to be the only constant. In terms of chroma, the matrix looks so chaotic that probably the song does not have a clear structure. In fact, I think the point of this song is that there is "a lot going on", and the lack of a structure is used as stylistic device. Running the song through Chordify yields a small number of chords that repeat relatively consistently, but a clear chromatic structure is still not picked up, probably because the chords are quite unrelated to each other (in a music theoretical sense), so the notes contained in one chord may be completely different from the notes contained in the previous chord. Timbre-wise, there seems to be some structure, with different parts each lasting 20-25 seconds long, but it is still relatively chaotic, especially when compared with the action song.
 
@@ -587,9 +653,9 @@ train %>%
 Column
 ---------------------------------------------------------
 
-As illustrated in the graph under **Audio features**, "relaxed songs", that is, those with high valence and low energy, tend to be written in a major key. However, there are exceptions and it may be interesting to look at one of them. One of these exceptions, from the comedy movie *Paddington 2*, is the track *It's Only One Red Sock*. Listening to it gives us an idea why this song is in this unique position. It sounds like a song that is made for a gripping, suspenseful scene, but it simultaneously has a jolly and playful character, reminding us that it is still from a children's movie.
+As illustrated in the graph under **Angry Action, Happy Comedy**, "relaxed songs", that is, those with high valence and low energy, tend to be written in a major key. However, there are exceptions and it may be interesting to look at one of them. One of these exceptions, from the comedy movie *Paddington 2*, is the track *It's Only One Red Sock*. Listening to it gives us an idea why this song is in this unique position. It sounds like a song that is made for a gripping, suspenseful scene, but it simultaneously has a jolly and playful character, reminding us that it is still from a children's movie.
 
-The key profile in the first tab on the left reveals that this song has essentially a three-part structure, one dominated by an B minor chord, an interlude dominated by its subdominant, E minor, and a final part that is in B minor again. However, the final section does not quite look like the first one. Indeed, new chords are introducted in between, and notes that are not part of the chord are played in the background, leading to a keygram where there is power in almost every chord label.
+The key profile in the first tab on the left reveals that this song has essentially a three-part structure, one dominated by an B minor chord, an interlude dominated by its subdominant, E minor, and a final part that is in B minor again. However, the final section does not quite look like the first one. Indeed, new chords are introduced in between, and notes that are not part of the chord are played in the background, leading to a keygram where there is power in almost every chord label.
 
 Let's look at a different example, *Train Heist* from *Solo: A Star Wars Story*, a track that with his relatively low valence and medium energy, represents a typical Action movie song. This keygram looks comparatively more complex, and sounds like it would accompany a suspenseful scene with many twists - marked by many key changes. A quiet intro in C minor is followed by a slightly more energetic, but still melancholic part in F minor. The following part in D minor slowly builds up the suspense and makes the song increase in energy. The key shifts to E minor and back to D minor. At the song's climax there is power corresponding to many different chords, in line with the sudden harmonic changes and the use of dissonance in the music. After using predominantly minor keys, the song ends with a finale in E major, sounding significantly happier and more triumphant than the rest of the song, presumably indicating that the heist has been a success.
 
@@ -748,137 +814,58 @@ film_cv %>%
     conf_mat(truth = playlist, estimate = .pred_class)
 ```
 
-The Versality of Dario Marianelli  {data-navmenu="Analyses"}
+Interestingly, the classifier that only uses selected features correctly classifies more comedy songs as actually being comedy songs, but performs *worse* with action songs. Instead, the classifier with all features predicts more songs coming from action movies as action songs. All in all then, including and excluding certain features from the classification does not change the classifier's performance substantially, but the classifier regardless does a pretty good job at classifying songs as belonging to either of the two categories.
+
+The Versatility of Dario Marianelli  {data-navmenu="Analyses"}
 ======================================================
 Column {data-width = 650}
 ---------------------------------------------------------
 
-```{r}
-bumblebee <- get_playlist_audio_features('1175159882', '0gaSUGW5vUIFpn34gH8nXT') %>%
-    add_audio_analysis
-paddington <- get_playlist_audio_features('1175159882', '5iOJTAy2oFdZTPxIaangS2') %>%
-    add_audio_analysis
-marianelli <-
-  bumblebee %>% mutate(playlist = "Bumblebee") %>%
-  bind_rows(paddington %>% mutate(playlist = "Paddington"))
-```
+### Cluster analysis of Dario Marianelli's film music
 
-```{r}
-marianelli <- 
-    get_playlist_audio_features('1175159882', '1dOHAViimBLo7SPbBhXr3y') %>% 
-    add_audio_analysis %>% 
-    mutate(
-        segments = 
-            map2(segments, key, compmus_c_transpose)) %>% 
-    mutate(
-        segments =
-            map(
-                segments,
-                mutate,
-                delta_timbre = map2(timbre, lag(timbre), `-`))) %>% 
-    mutate(
-        pitches = 
-            map(segments, 
-                compmus_summarise, pitches, 
-                method = 'mean', norm = 'manhattan'),
-        timbre =
-            map(
-                segments,
-                compmus_summarise, timbre,
-                method = 'mean'),
-        delta_timbre =
-            map(
-                segments,
-                compmus_summarise, delta_timbre,
-                method = 'mean')) %>% 
-    mutate(pitches = map(pitches, compmus_normalise, 'clr')) %>% 
-    mutate_at(vars(pitches, timbre, delta_timbre), map, bind_rows) %>% 
-    unnest(pitches, timbre, delta_timbre)
-```
-
-```{r}
-for (i in 1:nrow(marianelli)){
-  if (marianelli$album_name[i] == "Paddington 2 (Original Motion Picture Soundtrack)"){
-  marianelli$track_name[i] <- paste("(P)", marianelli$track_name[i])
-} else {
-  marianelli$track_name[i] <- paste("(B)", marianelli$track_name[i])
-}
-}
-```
-
-```{r}
-for (i in 1:nrow(marianelli)){
-  if (marianelli$album_name[i] == "Paddington 2 (Original Motion Picture Soundtrack)"){
-  marianelli$track_name[i] <- paste("(P)", marianelli$track_name[i])
-} else {
-  marianelli$track_name[i] <- paste("(B)", marianelli$track_name[i])
-}
-} # change the track names to add (P) or (B)
-```
-
-```{r}
-marianelli_juice <- 
-    recipe(track_name ~
-               danceability +
-               energy +
-               loudness +
-               speechiness +
-               acousticness +
-               instrumentalness +
-               liveness +
-               valence +
-               tempo +
-               duration_ms +
-               C + `C#|Db` + D + `D#|Eb` +
-               E + `F` + `F#|Gb` + G +
-               `G#|Ab` + A + `A#|Bb` + B +
-               c01 + c02 + c03 + c04 + c05 + c06 +
-               c07 + c08 + c09 + c10 + c11 + c12,
-           data = marianelli) %>% 
-    step_center(all_predictors()) %>%
-    step_scale(all_predictors()) %>%
-    # step_range(all_predictors()) %>% 
-    prep(marianelli %>% mutate(track_name = str_trunc(track_name, 20))) %>% 
-    juice %>% 
-    column_to_rownames('track_name')
-```
-
-```{r}
-marianelli_dist <- dist(marianelli_juice, method = 'euclidean')
-```
-
-```{r}
-plot(color_branches((as.dendrogram(hclust(marianelli_dist, method = 'complete'))), h = 11))
+```{r, out.width = "650px"}
+knitr::include_graphics("color_dendrogram.png")
 ```
 
 Column {data-width = 350}
 ---------------------------------------------------------
 
-**If somebody has got an idea how to reduce the axis label font size or otherwise prevent the track names from being cut off, let's hear it!!**
-
-Hopefully, the portfolio has so far demonstrated that music for different film genres differ considerably in several aspects. However, a movie soundtrack's sound is not only determined by its genre but also by the unique styler of its composer.
+Hopefully, the portfolio has so far demonstrated that music for different film genres differ considerably in several aspects. However, a movie soundtrack's sound is not only determined by its genre but also by the unique style of its composer.
 
 Among the soundtracks in this analysis, there was one action film soundtrack (**Bumblebee**) and one comedy film soundtrack (**Paddington 2**) written by the same composer, Dario Marianelli. An interesting question that arises is whether the soundtracks of these two films are substantially different, or whether they are similar, given that they were written by the same composer. This can be explored with cluster analysis using audio features, as done on the left side.
 
-As the dendrogram illustrates, clustering yielded 3 main clusters, and one song (*Dad's Old Videotapes* from the *Bumblebee* soundtrack) that does not cluster together with any other songs. Interestingly, <span style="color:red">the first cluster</span> contains exlusively songs from *Paddington 2*. While this is a comedy movie, all songs in this cluster sound more suspenseful and fast-paced and evoke the feeling of a hunt/race, underlining the Adventure element of this movie. Yet, they still do not really sound like tracks from an action movie, probably partly due their timbre (bells, marimba, accordeon, harps, etc.).
+As the dendrogram illustrates, clustering yielded 3 main clusters, and one song (*Dad's Old Videotapes* from the *Bumblebee* soundtrack) that does not cluster together with any other songs. Interestingly, <span style="color:red">the first cluster</span> contains exclusively songs from *Paddington 2*. While this is a comedy movie, all songs in this cluster sound more suspenseful and fast-paced and evoke the feeling of a hunt/race, underlining the Adventure element of this movie. Yet, they still do not really sound like tracks from an action movie, probably partly due their timbre (bells, marimba, accordion, harps, etc.).
 
-<span style="color:green">The second cluster</span>, in contrast, only contains tracks from *Bumblebee*, and they all sound more like typical action movie music. The timbre tends to be quite epic, with a big orchestra, a large brass and string section, but also elecric guitars, and with more use of drums and bass. Most of these songs use dissonance and semitone intervals to create suspense - essentially, this is the music we imagine in fight scnes and explosion scenes.
+<span style="color:green">The second cluster</span>, in contrast, only contains tracks from *Bumblebee*, and they all sound more like typical action movie music. The timbre tends to be quite epic, with a big orchestra, a large brass and string section, but also electric guitars, and with more use of drums and bass. Most of these songs use dissonance and semitone intervals to create suspense - essentially, this is the music we imagine in fight scenes and explosion scenes.
 
 <span style="color:blue">The remaining cluster</span> contains a mix of songs from the two movies. These songs use less dissonant chords, but more minor chords, and tend to be slow. Compared to the other two clusters, this appears to be music that is more in the background and that accompanies more emotional scenes.
 
 The only song that does not fall into any cluster, <span style="color:orange">Dad's Old Videotapes</span>, sounds markedly different from all other songs. It is extremely slow, melancholic and sad. This appears to be from a really emotional scene, presumably where somebody revels in old memories.
 
-All in all then, we see a clear cluster with music typical for *Paddington 2* (and maybe typical for adventure comedies in general), and a cluster with music typical for *Bumblebee* (or action movies in general). However, there are also many other songs from both films that form one cluster together, that the clustering analysis could not easily separate. Maybe this just reflects Dario Marianelli's style in general, or maybe it reflects the fact that sometimes movies of different genres like action and comedy try to evoke the same emotions in a particular scene.
+All in all, then, we see a clear cluster with music typical for *Paddington 2* (and maybe typical for adventure comedies in general), and a cluster with music typical for *Bumblebee* (or action movies in general). However, there are also many other songs from both films that form one cluster together, that the clustering analysis could not easily separate. Maybe this just reflects Dario Marianelli's style in general, or maybe it reflects the fact that sometimes movies of different genres like action and comedy try to evoke the same emotions in a particular scene.
 
 Conclusions {data-navmenu="Conclusions"}
 ======================================================
 
-It is difficult to imagine film without music. In fact, the music, whether it is part of the scene or background accompaniment, has a profound effect on our exprience of watching a movie. Therefore, the style of music one picks or composes for a film is far from random: Music is used to add an extra layer of emotion to a scene, and therefore music from different genres should have different styles of music. Indeed, action and comedy films, as this analysis aimed to show, appear to have quite different styles of music.
+Column {data-width = 700}
+---------------------------------------------------------
+### Why is this analysis relevant?
 
-Looking at valence and energy features, it appears that while both genres seem to have a lot of tracks in the low energy range (presumably those tracks that are in the background), comedy movies seem to have more 'happy' tracks (high valence, high energy) and more 'relaxed' tracks (high valence, low energy), where as action movies seem to have more 'angry' tracks (low valence, high energy).
+It is difficult to imagine film without music. In fact, the music, whether it is part of the scene or background accompaniment, has a profound effect on our experience of watching a movie. Therefore, the style of music one picks or composes for a film is far from random: Music is used to add an extra layer of emotion to a scene, and therefore music from different genres should have different styles of music. Indeed, action and comedy films, as this analysis aimed to show, appear to have quite different styles of music.
 
-In terms of chroma, when we picked a typical action song and a typical comedy song, the action song had a lot more power on the same note, and its direct neighbour, probably creating dissonance through semitone intervals. The comedy song, had its power more evenly straight across the range of tones, but with higher power in its dominant and subdominant tone.
+Exploring track features, we showed that while energy generally seems to be low in movie soundtracks, comedy movies have more 'happy' and 'relaxed' tracks, whereas action movies seem to have more 'angry' tracks, as well as more songs where the tempo varies throughout the song.
 
-If we look at timbre, it makes sense that action and comedy movies would have relatively different timbres. Indeed, when comparing a typical action track and a typical comedy track, the action track seemed to have somewhat more loudness and less brightness compared to the comedy track.
+We further explored, by using prototypical examples from each genre, how chroma and timbre can be utilised as stylistic means to achieve a certain effect, like to build suspense or to create a feeling of relaxation.
 
-*To be continued*
+With the help of dynamic time warping, we explored how existing songs can be used and slightly modified to serve a certain function inside a movie scene. Applying a similar technique, self-similarity matrices, to a few prototypical songs in the sample, further demonstrated how a song's structure can be explored based on harmonic and timbre features. Similarly, keygrams have allowed us to look into a song's structure, and specifically show how this might differ between an action and a comedy song.
+
+Finally, by means of classification analysis and cluster analysis, we explored how well the computer was able to distinguish between songs from action and comedy movies, which was one of the most interesting questions to answer. Indeed, it appears that music from these two genres is sufficiently different for a classifier to correctly classify most music into either genre, and even in the case of the same composer create clusters corresponding largely to genre.
+
+While pointing out some interesting trends in musical data, this portfolio is by no means exhaustive, but it hopefully demonstrates that the music we hear in different types of movies not only *sounds* different, by some fuzzy and subjective standard, but actually these different can be quantified, analysed, and illustrated in a graphical form. I hope this portfolio inspires its readers to conduct further analyses into music data and film music specifically.
+
+Column {data-width = 300}
+---------------------------------------------------------
+
+```{r, out.width = "300px"}
+knitr::include_graphics("conclusion.png")
+```
